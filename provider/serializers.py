@@ -1,65 +1,49 @@
 from rest_framework import serializers
+from provider.models import Product, Contact, NetworkLink
 
-from provider.models import Product, Factory, RetailNetwork, IndividualEntrepreneur, NetworkObject
 
+class ContactSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор контактов
+    """
 
-class NetworkObjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = NetworkObject
+        model = Contact
         fields = '__all__'
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор продуктов
+    """
 
     class Meta:
         model = Product
         fields = '__all__'
 
 
-class FactorySerializer(serializers.ModelSerializer):
-    products = serializers.SlugRelatedField(
-        required=False,
-        queryset=Product.objects.all(),
-        slug_field="name",
-        many=True
-    )
+class NetworkLinkSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор торговой сети
+    """
 
     class Meta:
-        model = Factory
-        fields = ('id', 'name', 'country', 'city', 'street', 'house_number', 'created_at', 'products')
-
-
-class RetailNetworkSerializer(serializers.ModelSerializer):
-    retail_factory = serializers.SlugRelatedField(
-        required=False,
-        queryset=NetworkObject.objects.all(),
-        slug_field="name",
-    )
-    products = serializers.SlugRelatedField(
-        required=False,
-        queryset=Product.objects.all(),
-        slug_field="name",
-        many=True
-    )
-
-    class Meta:
-        model = RetailNetwork
+        model = NetworkLink
         fields = '__all__'
 
 
-class IndividualEntrepreneurSerializer(serializers.ModelSerializer):
-    retail_network = serializers.SlugRelatedField(
-        required=False,
-        queryset=NetworkObject.objects.all(),
-        slug_field="name",
-    )
-    products = serializers.SlugRelatedField(
-        required=False,
-        queryset=Product.objects.all(),
-        slug_field="name",
-        many=True
+class NetworkLinkDetailSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор детальной информации торговой сети
+    """
+    contact_link = ContactSerializer()
+    products = ProductSerializer(many=True)
+    provider_link = serializers.SlugRelatedField(
+        queryset=NetworkLink.objects.all(),
+        slug_field='name'
     )
 
     class Meta:
-        model = IndividualEntrepreneur
+        model = NetworkLink
         fields = '__all__'
+        read_only_fields = ('debt',)

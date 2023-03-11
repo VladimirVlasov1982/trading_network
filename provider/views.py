@@ -1,55 +1,28 @@
-from rest_framework import generics
-
-from provider.models import Product, Factory, RetailNetwork, IndividualEntrepreneur, NetworkObject
-from provider.serializers import ProductSerializer, FactorySerializer, RetailNetworkSerializer, \
-    IndividualEntrepreneurSerializer, NetworkObjectSerializer
-
-
-class ProductListCreateView(generics.ListCreateAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
+from provider.filters import NetworkLinkFilter
+from provider.models import NetworkLink
+from provider.permissions import IsActiveEmployee
+from provider.serializers import NetworkLinkSerializer, NetworkLinkDetailSerializer
 
 
-class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+class NetworkLinkViewSet(viewsets.ModelViewSet):
+    """Содержит в себе все базовые API-методы для торговой сети"""
+    queryset = NetworkLink.objects.all()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = NetworkLinkFilter
+    default_serializer = NetworkLinkSerializer
+    serializer_classes = {
+        'retrieve': NetworkLinkDetailSerializer,
+    }
+    default_permission = [AllowAny()]
+    permissions = {
+        'update': [IsActiveEmployee()],
+    }
 
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.default_serializer)
 
-class FactoryListCreateView(generics.ListCreateAPIView):
-    queryset = Factory.objects.all()
-    serializer_class = FactorySerializer
-
-
-class FactoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Factory.objects.all()
-    serializer_class = FactorySerializer
-
-
-class RetailNetworkListCreateView(generics.ListCreateAPIView):
-    queryset = RetailNetwork.objects.all()
-    serializer_class = RetailNetworkSerializer
-
-
-class RetailNetworkRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = RetailNetwork.objects.all()
-    serializer_class = RetailNetworkSerializer
-
-
-class IndividualEntrepreneurListCreateView(generics.ListCreateAPIView):
-    queryset = IndividualEntrepreneur.objects.all()
-    serializer_class = IndividualEntrepreneurSerializer
-
-
-class IndividualEntrepreneurRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = IndividualEntrepreneur.objects.all()
-    serializer_class = IndividualEntrepreneurSerializer
-
-
-class NetworkObjectListCreateView(generics.ListCreateAPIView):
-    queryset = NetworkObject.objects.all()
-    serializer_class = NetworkObjectSerializer
-
-
-class NetworkObjectRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = NetworkObject.objects.all()
-    serializer_class = NetworkObjectSerializer
+    def get_permissions(self):
+        return self.permissions.get(self.action, self.default_permission)
